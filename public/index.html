@@ -583,10 +583,12 @@
         <div class="pre-title">AKSIYA TEZ ORADA TUGAYDI</div>
         <h1 class="main-title">BUYURTMA BERISHGA ULGURING <br><span class="text-accent">ENG PAST NARXDA</span></h1>
       </div>
-      <div class="intermediate-cta">
-        <a href="#order_form" class="button cta-btn scroll-to-form"
-          style="display: block; text-align: center; text-decoration: none;">✓ 135 000 SO'M — BUYURTMA BERISH</a>
-      </div>
+      <form class="form order_form" method="post">
+        <input class="field" type="text" name="name" placeholder="Ismingizni kiriting" minlength="2" required>
+        <input class="field" type="tel" name="phone" placeholder="+998 90 123 45 67" minlength="7" required data-phone-mask>
+        <button class="button cta-btn" type="submit">✓ 135 000 SO'M — BUYURTMA BERISH</button>
+        <div class="form-security"><span class="lock-icon">🔒</span> Qabul qilganda to'lov | 🔄 30 kun qaytarish</div>
+      </form>
     </section>
 
     <footer class="footer-detailer">
