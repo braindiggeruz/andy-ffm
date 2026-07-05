@@ -1,6 +1,6 @@
 :root {
   --bg-main: #F7FBF8;
-  --bg-gradient: linear-gradient(180deg, 
+  --bg-gradient: linear-gradient(180deg,
     #FFFFFF 0%,
     #F0F9F5 15%,
     #E8F5EE 30%,
@@ -20,6 +20,34 @@
 
   --shadow-glow: 0 10px 30px rgba(28, 134, 76, 0.15);
   --border-color: rgba(28, 134, 76, 0.18);
+}
+
+/* Anti force-dark: declare a "dark theme" that is identical to the light one.
+   Samsung Internet / Chrome auto-dark invert only pages WITHOUT their own
+   dark-scheme styles — this block makes them back off and keeps the page light. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: only light;
+    --bg-main: #F7FBF8;
+    --bg-card: #FFFFFF;
+    --text-main: #1A2E22;
+    --text-body: #4A6555;
+    --accent-green: #1C864C;
+    --accent-light: #E8F5EE;
+    --accent-mint: #D0EDDB;
+  }
+  html, body {
+    background: linear-gradient(180deg,
+      #FFFFFF 0%,
+      #F0F9F5 15%,
+      #E8F5EE 30%,
+      #D8F0E8 50%,
+      #C8EBE0 70%,
+      #B8E6D8 85%,
+      #A8E1D0 100%) !important;
+    background-attachment: fixed !important;
+    color: #1A2E22 !important;
+  }
 }
 
 * {
