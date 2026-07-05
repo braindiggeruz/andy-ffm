@@ -57,6 +57,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 8000);
 })();
 
+// === PERF: lazy-load + autoplay video only when scrolled into view ===
+(function() {
+  var vids = document.querySelectorAll('video[data-lazy-video]');
+  if (!vids.length) return;
+  if (!('IntersectionObserver' in window)) {
+    vids.forEach(function(v){ v.preload = 'auto'; v.play && v.play().catch(function(){}); });
+    return;
+  }
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      var v = entry.target;
+      if (entry.isIntersecting) {
+        if (v.preload === 'none') v.preload = 'auto';
+        v.play && v.play().catch(function(){});
+        obs.unobserve(v);
+      }
+    });
+  }, { rootMargin: '200px 0px' });
+  vids.forEach(function(v){ obs.observe(v); });
+})();
+
 // === CRO: Hide sticky CTA when form is visible ===
 (function() {
   var stickyBar = document.querySelector('.sticky-cta-bar');

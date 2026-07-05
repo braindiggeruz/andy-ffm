@@ -1596,6 +1596,72 @@ html {
   }
 }
 
+/* Form title (above fields) */
+.form-title {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.form-title-main {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text-main);
+  letter-spacing: -0.3px;
+}
+.form-title-sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-body);
+}
+
+/* Inline field validation (replaces alert()) */
+.field.field--error {
+  border-color: #D8434E;
+  box-shadow: 0 0 8px rgba(216, 67, 78, 0.2);
+}
+.field-error {
+  font-size: 12px;
+  font-weight: 600;
+  color: #D8434E;
+  margin-top: -8px;
+  text-align: left;
+  padding-left: 4px;
+}
+.form-error-box {
+  background: #FDF0F0;
+  border: 1px solid rgba(216, 67, 78, 0.35);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #A83238;
+  text-align: center;
+  line-height: 1.45;
+}
+
+/* PNG icon images (replace emoji) */
+.trust-icon img,
+.proof-item img,
+.faq-icon img,
+.form-security img {
+  vertical-align: middle;
+  display: inline-block;
+  object-fit: contain;
+}
+.faq-icon img {
+  display: block;
+}
+.proof-item img,
+.form-security img {
+  margin-right: 2px;
+  margin-top: -2px;
+}
+.social-proof-hero {
+  align-items: center;
+}
+
 /* Form Submit Button Enhancement */
 #form_submit_btn {
   position: relative;

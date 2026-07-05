@@ -225,6 +225,38 @@
     return "+998 " + d.slice(0, 2) + " " + d.slice(2, 5) + " " + d.slice(5, 7) + " " + d.slice(7);
   }
 
+  // --- inline form errors (replaces alert) ---
+  function clearFieldError(el) {
+    if (!el) return;
+    el.classList.remove("field--error");
+    var next = el.nextElementSibling;
+    if (next && next.className === "field-error") next.parentNode.removeChild(next);
+  }
+  function showFieldError(el, msg) {
+    if (!el) return;
+    clearFieldError(el);
+    el.classList.add("field--error");
+    var div = document.createElement("div");
+    div.className = "field-error";
+    div.textContent = msg;
+    el.parentNode.insertBefore(div, el.nextSibling);
+    try { el.focus(); } catch (e) {}
+  }
+  function showFormError(form, msg) {
+    var box = form.querySelector(".form-error-box");
+    if (!box) {
+      box = document.createElement("div");
+      box.className = "form-error-box";
+      var btn = form.querySelector('[type="submit"]');
+      form.insertBefore(box, btn ? btn.nextSibling : null);
+    }
+    box.textContent = msg;
+  }
+  function clearFormError(form) {
+    var box = form.querySelector(".form-error-box");
+    if (box) box.parentNode.removeChild(box);
+  }
+
   // --- FormStart (once) ---
   var formStartFired = false;
   function fireFormStartOnce() {
@@ -259,6 +291,7 @@
         phoneEl.addEventListener("input", function (e) {
           var formatted = formatPhoneInput(e.target.value);
           e.target.value = formatted;
+          clearFieldError(phoneEl);
           updateProgress();
         });
         // Auto-focus phone field on name blur
@@ -273,7 +306,10 @@
       
       // Add progress update to name input
       if (nameEl) {
-        nameEl.addEventListener("input", updateProgress);
+        nameEl.addEventListener("input", function () {
+          clearFieldError(nameEl);
+          updateProgress();
+        });
       }
       
       [nameEl, phoneEl].forEach(function (el) {
@@ -286,10 +322,12 @@
         ev.preventDefault();
         if (submitInFlight) return;
 
+        clearFieldError(nameEl); clearFieldError(phoneEl); clearFormError(form);
+
         var nameCheck = validateName(nameEl ? nameEl.value : "");
-        if (!nameCheck.ok) { alert(nameCheck.msg); if (nameEl) nameEl.focus(); return; }
+        if (!nameCheck.ok) { showFieldError(nameEl, nameCheck.msg); return; }
         var phoneCheck = validatePhone(normDigits(phoneEl ? phoneEl.value : ""));
-        if (!phoneCheck.ok) { alert(phoneCheck.msg); if (phoneEl) phoneEl.focus(); return; }
+        if (!phoneCheck.ok) { showFieldError(phoneEl, phoneCheck.msg); return; }
 
         var attrs = getAttrs();
         var eventId = uuidv4();
@@ -343,13 +381,13 @@
               setTimeout(function () { window.location.href = "thanks.html"; }, 450);
             } else {
               track("buyo_rejected", { http: r.resp.status, code: (r.data && r.data.code) || "unknown" });
-              alert("Buyurtmani yuborib bo'lmadi. Iltimos, bir oz kutib qayta urinib ko'ring.");
+              showFormError(form, "Buyurtmani yuborib bo'lmadi. Iltimos, bir oz kutib \"BUYURTMA BERISH\" tugmasini qayta bosing.");
               resetBtn();
             }
           })
           .catch(function () {
             track("api_error");
-            alert("Ulanish bilan muammo. Internet aloqasini tekshirib qayta urinib ko'ring.");
+            showFormError(form, "Ulanish bilan muammo. Internet aloqasini tekshirib qayta urinib ko'ring.");
             resetBtn();
           });
       });

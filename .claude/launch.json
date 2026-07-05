@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "socks-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dlx", "wrangler@latest", "pages", "dev", "public", "--port", "8788", "--binding", "BUYO_MOCK_MODE=true"],
+      "port": 8788
+    }
+  ]
+}

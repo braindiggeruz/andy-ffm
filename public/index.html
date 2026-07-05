@@ -8,7 +8,9 @@
   <meta name="color-scheme" content="only light">
   <meta name="theme-color" content="#FFFFFF">
   <meta name="supported-color-schemes" content="light">
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="preconnect" href="https://connect.facebook.net" crossorigin>
+  <link rel="preload" as="image" href="images/96669f66-baa7-4afd-9e7f-8c4d95304684.webp" fetchpriority="high">
+  <link rel="stylesheet" href="style.css?v=5">
 
   <!-- Meta Pixel Code (init handled by scripts/app.js via /api/config) -->
   <script>
@@ -38,19 +40,10 @@
         <div class="subtitle-wrapper">
           <span class="subtitle">Har bir barmoq alohida — charchoq yo'q, sirpanib ketmaydi</span>
         </div>
-        <!-- Social Proof -->
-        <div class="social-proof-hero">
-          <span class="proof-item">✓ 2,847 mijoz</span>
-          <span class="proof-separator">•</span>
-          <span class="proof-item">⭐ 4.8/5</span>
-          <span class="proof-separator">•</span>
-          <span class="proof-item">📦 15,234 buyurtma</span>
-        </div>
       </div>
 
       <div class="product-image-wrapper">
-        <img src="images/96669f66-baa7-4afd-9e7f-8c4d95304684.webp" alt="Barmoqli paypoqlar" class="product-img">
-
+        <img src="images/96669f66-baa7-4afd-9e7f-8c4d95304684.webp" alt="Barmoqli paypoqlar" class="product-img" fetchpriority="high" decoding="async">
       </div>
 
       <div class="price-block">
@@ -61,6 +54,37 @@
         <div class="price-item new">
           <span class="price-text">Aksiyadagi narx:</span>
           <span class="price-value"><span data-price-new></span> <span data-currency></span></span>
+        </div>
+      </div>
+
+      <form action="send.php" class="form order_form" method="post" id="order_form">
+        <div class="form-title">
+          <span class="form-title-main">BUYURTMA — 30 SONIYA</span>
+          <span class="form-title-sub">Faqat ism va telefon raqami kifoya</span>
+        </div>
+        <!-- Form Progress Bar -->
+        <div class="form-progress-bar">
+          <div class="progress-fill" id="form_progress"></div>
+        </div>
+
+        <input class="field" type="text" name="name" placeholder="Ismingizni kiriting" minlength="2" required id="form_name_input" autocomplete="name" enterkeyhint="next">
+        <input class="field" type="tel" name="phone" placeholder="+998 90 123 45 67" minlength="7" required id="phone-input" data-phone-mask inputmode="tel" autocomplete="tel" enterkeyhint="done">
+        <button class="button cta-btn" type="submit" id="form_submit_btn">✓ 135 000 SO'M — BUYURTMA BERISH</button>
+        <div class="form-security"><img src="images/icons/icon_lock_48.png" alt="" width="14" height="14"> Qabul qilganda to'lov | <img src="images/icons/icon_return_48.png" alt="" width="14" height="14"> 30 kun qaytarish</div>
+      </form>
+
+      <div class="trust-block">
+        <div class="trust-item">
+          <div class="trust-icon"><img src="images/icons/icon_card_48.png" alt="To'lov" width="24" height="24"></div>
+          <span>Qabul qilganda to'lov</span>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon"><img src="images/icons/icon_delivery_48.png" alt="Yetkazib berish" width="24" height="24"></div>
+          <span>Yetkazib berish 1-3 kun</span>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon"><img src="images/icons/icon_return_48.png" alt="Qaytarish" width="24" height="24"></div>
+          <span>Qaytarish uchun 30 kun</span>
         </div>
       </div>
 
@@ -96,47 +120,13 @@
         </div>
       </div>
 
-      <!-- Guarantee Block (Hero) -->
-      <div class="guarantee-hero-block">
-        <div class="guarantee-hero-item">
-          <span class="guarantee-icon">🔒</span>
-          <span class="guarantee-text">Qabul qilganda to'lov</span>
-        </div>
-        <div class="guarantee-hero-item">
-          <span class="guarantee-icon">🔄</span>
-          <span class="guarantee-text">30 kun qaytarish</span>
-        </div>
-        <div class="guarantee-hero-item">
-          <span class="guarantee-icon">✓</span>
-          <span class="guarantee-text">Savol yo'q</span>
-        </div>
-      </div>
-
-      <form action="send.php" class="form order_form" method="post" id="order_form">
-        <!-- Form Progress Bar -->
-        <div class="form-progress-bar">
-          <div class="progress-fill" id="form_progress"></div>
-        </div>
-        
-        <input class="field" type="text" name="name" placeholder="Ismingizni kiriting" minlength="2" required id="form_name_input">
-        <input class="field" type="tel" name="phone" placeholder="+998 90 123 45 67" minlength="7" required id="phone-input" data-phone-mask>
-        <button class="button cta-btn" type="submit" id="form_submit_btn">✓ 135 000 SO'M — BUYURTMA BERISH</button>
-        <div class="form-security"><span class="lock-icon">🔒</span> Qabul qilganda to'lov | 🔄 30 kun qaytarish</div>
-      </form>
-
-      <div class="trust-block">
-        <div class="trust-item">
-          <div class="trust-icon">💳</div>
-          <span>Qabul qilganda to'lov</span>
-        </div>
-        <div class="trust-item">
-          <div class="trust-icon">🚚</div>
-          <span>Yetkazib berish 1-3 kun</span>
-        </div>
-        <div class="trust-item">
-          <div class="trust-icon">🔄</div>
-          <span>Qaytarish uchun 30 kun</span>
-        </div>
+      <!-- Social Proof -->
+      <div class="social-proof-hero">
+        <span class="proof-item"><img src="images/icons/icon_check_48.png" alt="" width="16" height="16"> 2,847 mijoz</span>
+        <span class="proof-separator">•</span>
+        <span class="proof-item"><img src="images/icons/icon_star_48.png" alt="" width="16" height="16"> 4.8/5</span>
+        <span class="proof-separator">•</span>
+        <span class="proof-item"><img src="images/icons/icon_box_48.png" alt="" width="16" height="16"> 15,234 buyurtma</span>
       </div>
     </section>
 
@@ -187,7 +177,7 @@
       <h2 class="section-title">QULAYLIK VA HIMOYA <br><span class="text-accent">HAR KUNI</span></h2>
 
       <div class="desc-video-wrap">
-        <video class="desc-video" autoplay loop muted playsinline poster="images/1770921926.webp">
+        <video class="desc-video" loop muted playsinline preload="none" poster="images/1770921926.webp" data-lazy-video>
           <source src="images/1770921926.mp4" type="video/mp4">
           Brauzeringiz videoni qo'llab-quvvatlamaydi.
         </video>
@@ -260,7 +250,7 @@
       <div class="faq-container">
         <div class="faq-item">
           <div class="faq-question">
-            <span class="faq-icon">❓</span>
+            <span class="faq-icon"><img src="images/icons/icon_question_48.png" alt="?" width="20" height="20" loading="lazy"></span>
             <h3>O'lcham universal? Menga mos keladi?</h3>
             <span class="faq-toggle">+</span>
           </div>
@@ -271,7 +261,7 @@
 
         <div class="faq-item">
           <div class="faq-question">
-            <span class="faq-icon">❓</span>
+            <span class="faq-icon"><img src="images/icons/icon_question_48.png" alt="?" width="20" height="20" loading="lazy"></span>
             <h3>Poyabzal ichida sirpanib ketadimi?</h3>
             <span class="faq-toggle">+</span>
           </div>
@@ -282,7 +272,7 @@
 
         <div class="faq-item">
           <div class="faq-question">
-            <span class="faq-icon">❓</span>
+            <span class="faq-icon"><img src="images/icons/icon_question_48.png" alt="?" width="20" height="20" loading="lazy"></span>
             <h3>Yuvish mumkinmi? Qancha vaqt ishlaydi?</h3>
             <span class="faq-toggle">+</span>
           </div>
@@ -293,7 +283,7 @@
 
         <div class="faq-item">
           <div class="faq-question">
-            <span class="faq-icon">❓</span>
+            <span class="faq-icon"><img src="images/icons/icon_question_48.png" alt="?" width="20" height="20" loading="lazy"></span>
             <h3>Yetkazib berish qancha vaqt oladi?</h3>
             <span class="faq-toggle">+</span>
           </div>
@@ -304,7 +294,7 @@
 
         <div class="faq-item">
           <div class="faq-question">
-            <span class="faq-icon">❓</span>
+            <span class="faq-icon"><img src="images/icons/icon_question_48.png" alt="?" width="20" height="20" loading="lazy"></span>
             <h3>Agar yoqmasa, qaytarish mumkinmi?</h3>
             <span class="faq-toggle">+</span>
           </div>
@@ -315,7 +305,7 @@
 
         <div class="faq-item">
           <div class="faq-question">
-            <span class="faq-icon">❓</span>
+            <span class="faq-icon"><img src="images/icons/icon_question_48.png" alt="?" width="20" height="20" loading="lazy"></span>
             <h3>Bu original mahsulot?</h3>
             <span class="faq-toggle">+</span>
           </div>
@@ -326,7 +316,7 @@
 
         <div class="faq-item">
           <div class="faq-question">
-            <span class="faq-icon">❓</span>
+            <span class="faq-icon"><img src="images/icons/icon_question_48.png" alt="?" width="20" height="20" loading="lazy"></span>
             <h3>Nima uchun boshqa paypoqlardan ko'ra qimmat?</h3>
             <span class="faq-toggle">+</span>
           </div>
@@ -337,7 +327,7 @@
 
         <div class="faq-item">
           <div class="faq-question">
-            <span class="faq-icon">❓</span>
+            <span class="faq-icon"><img src="images/icons/icon_question_48.png" alt="?" width="20" height="20" loading="lazy"></span>
             <h3>Haqiqatan ham oyoq og'riqlarini kamaytiradi?</h3>
             <span class="faq-toggle">+</span>
           </div>
@@ -348,7 +338,7 @@
 
         <div class="faq-item">
           <div class="faq-question">
-            <span class="faq-icon">❓</span>
+            <span class="faq-icon"><img src="images/icons/icon_question_48.png" alt="?" width="20" height="20" loading="lazy"></span>
             <h3>Agar yoqmasa, qaytarish qancha vaqt oladi?</h3>
             <span class="faq-toggle">+</span>
           </div>
@@ -359,7 +349,7 @@
 
         <div class="faq-item">
           <div class="faq-question">
-            <span class="faq-icon">❓</span>
+            <span class="faq-icon"><img src="images/icons/icon_question_48.png" alt="?" width="20" height="20" loading="lazy"></span>
             <h3>Erkak va ayol uchun ham mos?</h3>
             <span class="faq-toggle">+</span>
           </div>
@@ -404,6 +394,11 @@
             <p>Ha. Biz faqat ismingiz va telefon raqamingizni so'raymiz. Hech qanday karta ma'lumoti olmaymiz. Qabul qilganda to'lov — xavfsiz usul.</p>
           </div>
         </div>
+      </div>
+
+      <div class="intermediate-cta" style="margin-top: 30px;">
+        <a href="#order_form" class="button cta-btn scroll-to-form"
+          style="display: block; text-align: center; text-decoration: none;">SAVOL QOLMADIMI? BUYURTMA BERING</a>
       </div>
     </section>
 
@@ -586,10 +581,10 @@
         <h1 class="main-title">BUYURTMA BERISHGA ULGURING <br><span class="text-accent">ENG PAST NARXDA</span></h1>
       </div>
       <form class="form order_form" method="post">
-        <input class="field" type="text" name="name" placeholder="Ismingizni kiriting" minlength="2" required>
-        <input class="field" type="tel" name="phone" placeholder="+998 90 123 45 67" minlength="7" required data-phone-mask>
+        <input class="field" type="text" name="name" placeholder="Ismingizni kiriting" minlength="2" required autocomplete="name" enterkeyhint="next">
+        <input class="field" type="tel" name="phone" placeholder="+998 90 123 45 67" minlength="7" required data-phone-mask inputmode="tel" autocomplete="tel" enterkeyhint="done">
         <button class="button cta-btn" type="submit">✓ 135 000 SO'M — BUYURTMA BERISH</button>
-        <div class="form-security"><span class="lock-icon">🔒</span> Qabul qilganda to'lov | 🔄 30 kun qaytarish</div>
+        <div class="form-security"><img src="images/icons/icon_lock_48.png" alt="" width="14" height="14"> Qabul qilganda to'lov | <img src="images/icons/icon_return_48.png" alt="" width="14" height="14"> 30 kun qaytarish</div>
       </form>
     </section>
 
@@ -611,7 +606,7 @@
 
   <!-- Sticky CTA for mobile -->
   <div class="sticky-cta-bar">
-    <a href="#order_form" class="sticky-cta-btn">BUYURTMA BERISH</a>
+    <a href="#order_form" class="sticky-cta-btn">135 000 SO'M — BUYURTMA BERISH</a>
   </div>
 
   <!-- Social proof toast -->
@@ -620,8 +615,8 @@
     <span class="toast-text">Bugun <strong>47</strong> ta to'plam sotildi!</span>
   </div>
 
-  <script src="scripts/script.js?v=3"></script>
-  <script src="scripts/app.js?v=3"></script>
+  <script src="scripts/script.js?v=5"></script>
+  <script src="scripts/app.js?v=5"></script>
 </body>
 
 </html>
