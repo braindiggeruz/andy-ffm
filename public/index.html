@@ -5,8 +5,8 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="light">
-  <link rel="stylesheet" href="style.css">
+  <meta name="color-scheme" content="only light">
+  <link rel="stylesheet" href="style.css?v=3">
 
   <!-- Meta Pixel Code (init handled by scripts/app.js via /api/config) -->
   <script>
@@ -577,10 +577,47 @@
       </div>
     </section>
 
+    <!-- Final CTA -->
+    <section class="hero-detailer final-cta-detailer">
+      <div class="hero-header">
+        <div class="pre-title">AKSIYA TEZ ORADA TUGAYDI</div>
+        <h1 class="main-title">BUYURTMA BERISHGA ULGURING <br><span class="text-accent">ENG PAST NARXDA</span></h1>
+      </div>
+      <div class="intermediate-cta">
+        <a href="#order_form" class="button cta-btn scroll-to-form"
+          style="display: block; text-align: center; text-decoration: none;">✓ 135 000 SO'M — BUYURTMA BERISH</a>
+      </div>
+    </section>
+
+    <footer class="footer-detailer">
+      <div class="footer__inner">
+        <p class="footer__distributor">
+          O'zbekiston Respublikasi hududidagi <br>
+          rasmiy distribyutor. Barcha huquqlar himoyalangan.
+        </p>
+        <div class="footer__policy">
+          <p>Saytimizda amal qiladi:</p>
+          <a href="https://buyo.uz/ru/legal/privacy-policy" target="_blank" class="footer__link">
+            Maxfiylik siyosati
+          </a>
+        </div>
+      </div>
+    </footer>
   </div>
 
-  <script src="scripts/timer.js"></script>
-  <script src="scripts/app.js"></script>
+  <!-- Sticky CTA for mobile -->
+  <div class="sticky-cta-bar">
+    <a href="#order_form" class="sticky-cta-btn">BUYURTMA BERISH</a>
+  </div>
+
+  <!-- Social proof toast -->
+  <div class="social-proof-toast" id="socialProofToast">
+    <span class="toast-icon">🔥</span>
+    <span class="toast-text">Bugun <strong>47</strong> ta to'plam sotildi!</span>
+  </div>
+
+  <script src="scripts/script.js?v=3"></script>
+  <script src="scripts/app.js?v=3"></script>
 </body>
 
 </html>
