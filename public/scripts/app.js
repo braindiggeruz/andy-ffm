@@ -157,20 +157,35 @@
     if (!isFinite(pn) || !isFinite(sale) || sale < 0 || sale > 99) return;
     cfg.price_old = Math.floor((pn / (100 - sale)) * 100).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
   }
+  function fmtInt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+  function fillPrices(cfg) {
+    computeOld(cfg);
+    setText('[data-price-new]', cfg.price_new);
+    setText('[data-currency]', cfg.currency);
+    var hasOld = cfg.price_old != null && String(cfg.price_old).trim() !== "";
+    if (hasOld) {
+      setText('[data-price-old]', cfg.price_old);
+      setText('[data-sale]', cfg.sale);
+    } else {
+      // No honest anchor price configured → hide the struck-through old row
+      // so the block shows one clean price instead of an empty "Oddiy narx".
+      $$('.price-item.old').forEach(function (el) { el.style.display = 'none'; });
+    }
+    var pn = Number(String(cfg.price_new || "").replace(/\s+/g, ""));
+    if (isFinite(pn) && pn > 0) CONFIG.value = pn;
+  }
   function loadCfgPrices() {
     return fetch("/api/cfg", { credentials: "same-origin" })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (cfg) {
-        if (!cfg || typeof cfg !== "object") return;
-        computeOld(cfg);
-        setText('[data-price-new]', cfg.price_new);
-        setText('[data-price-old]', cfg.price_old);
-        setText('[data-currency]', cfg.currency);
-        setText('[data-sale]', cfg.sale);
-        var pn = Number(String(cfg.price_new || "").replace(/\s+/g, ""));
-        if (isFinite(pn) && pn > 0) CONFIG.value = pn;
+        if (cfg && typeof cfg === "object" && cfg.price_new != null) { fillPrices(cfg); return; }
+        throw new Error("no_cfg");
       })
-      .catch(function () {});
+      .catch(function () {
+        // Fallback: derive from /api/config so the price ALWAYS renders,
+        // even if /api/cfg is unavailable.
+        fillPrices({ price_new: fmtInt(CONFIG.value || 135000), currency: "so'm" });
+      });
   }
 
   // --- validation (same rules as server) ---
@@ -341,19 +356,6 @@
     });
   }
 
-  function boot() {
-    captureAttribution();
-    loadConfig().then(function () {
-      pixelInit();
-      firePageView();
-      if (!IS_THANKS) fireViewContent();
-    });
-    if (!IS_THANKS) {
-      loadCfgPrices();
-      bindForms();
-      track("landing_view");
-    }
-  }
   // --- FAQ Accordion ---
   function initFAQ() {
     var faqItems = document.querySelectorAll(".faq-item");
@@ -373,19 +375,6 @@
     });
   }
 
-  function boot() {
-    loadConfig().then(function () {
-      pixelInit();
-      firePageView();
-      if (!IS_THANKS) fireViewContent();
-      initFAQ();
-    });
-    if (!IS_THANKS) {
-      loadCfgPrices();
-      bindForms();
-      track("landing_view");
-    }
-  }
   // --- Live Feed (Social Proof) ---
   function initLiveFeed() {
     var container = $("#live_feed_container");
@@ -409,6 +398,7 @@
   }
 
   function boot() {
+    captureAttribution();
     loadConfig().then(function () {
       pixelInit();
       firePageView();

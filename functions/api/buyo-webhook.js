@@ -130,14 +130,20 @@ async function sendToMetaCAPI({ lead_id, phone, name, email, order_value, create
   if (attrs.gender) userData.ge = [await sha256Hex(String(attrs.gender).toLowerCase().charAt(0))];
 
   // Build custom_data
+  const contentId = env.PRODUCT_CONTENT_ID || "socks-with-toes-v1";
   const customData = {
-    value: order_value || 135000,
-    currency: "UZS",
+    value: order_value || Number.parseInt(env.PRODUCT_VALUE_UZS || "135000", 10) || 135000,
+    currency: env.PRODUCT_CURRENCY || "UZS",
+    content_name: env.PRODUCT_CONTENT_NAME || "Barmoqli paypoqlar (3 juft)",
+    content_ids: [contentId],
+    content_type: "product",
   };
 
-  // Build CAPI event
+  // Build CAPI event.
+  // Stable event_id (no random suffix) so BUYO webhook retries for the same
+  // lead deduplicate in Meta instead of counting duplicate Purchases.
   const eventTime = Math.floor(new Date(created_at || Date.now()).getTime() / 1000);
-  const eventId = `buyo_${lead_id}_${Math.random().toString(36).slice(2, 9)}`;
+  const eventId = `buyo_purchase_${lead_id}`;
 
   const capiPayload = {
     data: [

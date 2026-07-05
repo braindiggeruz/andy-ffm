@@ -95,8 +95,8 @@ function buildCustomData(params, env) {
   return {
     value: resolved.value,
     currency,
-    content_name: env.PRODUCT_CONTENT_NAME || "Ultratovushli zararkunanda qaytargich",
-    content_category: "home_appliance",
+    content_name: env.PRODUCT_CONTENT_NAME || "Barmoqli paypoqlar (3 juft)",
+    content_category: "apparel",
     content_ids: [contentId],
     content_type: "product",
     num_items: resolved.quantity,
