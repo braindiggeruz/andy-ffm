@@ -28,6 +28,7 @@
 
 html {
   scroll-behavior: smooth;
+  color-scheme: light;
 }
 
 body {
@@ -1347,6 +1348,7 @@ body {
 /* Scroll to form smooth */
 html {
   scroll-behavior: smooth;
+  color-scheme: light;
 }
 
 .scroll-to-form {
