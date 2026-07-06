@@ -143,3 +143,113 @@
     } catch (e) {}
   });
 })();
+
+/* ===== CRO v2: persistent fields, qty selector, stock ticker, exit-intent =====
+   Additive only. No synthetic input events on restore -> FormStart stays pure. */
+(function () {
+  "use strict";
+  function ready(fn){ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",fn);else fn(); }
+  function ls(k,v){ try{ if(v===undefined)return localStorage.getItem(k); localStorage.setItem(k,v); }catch(e){ return null; } }
+
+  ready(function () {
+    var forms = document.querySelectorAll("form.order_form");
+    if (!forms.length) return;
+
+    /* --- 11. Persistent fields (restore WITHOUT firing events) --- */
+    var KN="cro_nm", KP="cro_ph";
+    var progress = document.getElementById("form_progress");
+    function syncProgress(f){
+      if(!progress) return;
+      var n=f.querySelector('input[name="name"]'), p=f.querySelector('input[name="phone"]');
+      var w=(n&&n.value.trim()?50:0)+(p&&p.value.trim().length>=7?50:0);
+      progress.style.width=w+"%";
+    }
+    Array.prototype.forEach.call(forms, function(f){
+      var n=f.querySelector('input[name="name"]'), p=f.querySelector('input[name="phone"]');
+      if(n){
+        if(!n.value && ls(KN)){ n.value=ls(KN); if(n.value.trim().length>=2)n.classList.add("field--valid"); }
+        n.addEventListener("input", function(){ ls(KN, n.value.trim()); });
+      }
+      if(p){
+        if(!p.value && ls(KP)){ p.value=ls(KP); if(p.value.replace(/\D/g,"").length>=12)p.classList.add("field--valid"); }
+        p.addEventListener("input", function(){ ls(KP, p.value); });
+      }
+      syncProgress(f);
+    });
+
+    /* --- 15. Quantity selector (marker to operator via utm_content) --- */
+    var QK="cro_qty";
+    function applyQty(q){
+      Array.prototype.forEach.call(document.querySelectorAll(".qty-opt"), function(b){
+        b.classList.toggle("active", b.getAttribute("data-qty")===String(q));
+      });
+      Array.prototype.forEach.call(document.querySelectorAll("form.order_form .cta-btn"), function(b){
+        if(!b.dataset.t0) b.dataset.t0=b.textContent;
+        if(b.dataset.t0.indexOf("135 000")===-1) return;
+        if(!b.disabled) b.textContent = (q===2) ? b.dataset.t0.replace("135 000","270 000") : b.dataset.t0;
+      });
+      try{
+        var st=JSON.parse(localStorage.getItem("affm_attr_v1")||"{}");
+        if(st.__uc0===undefined) st.__uc0 = st.utm_content||null;
+        st.utm_content = (q===2) ? ((st.__uc0? st.__uc0+"|":"")+"2-toplam") : st.__uc0;
+        localStorage.setItem("affm_attr_v1", JSON.stringify(st));
+      }catch(e){}
+      ls(QK, String(q));
+    }
+    Array.prototype.forEach.call(document.querySelectorAll(".qty-opt"), function(b){
+      b.addEventListener("click", function(){ applyQty(parseInt(b.getAttribute("data-qty"),10)||1); });
+    });
+    if(document.querySelector(".qty-opt")) applyQty(ls(QK)==="2"?2:1);
+
+    /* --- 10. Live stock counter (floor 3, max 3 ticks/session, daily reset) --- */
+    var sc=document.querySelectorAll(".stock-count"), sp=document.querySelector(".stock-progress");
+    if(sc.length){
+      var today=new Date().toISOString().slice(0,10), stt={};
+      try{ stt=JSON.parse(ls("cro_stock")||"{}"); }catch(e){}
+      var v=(stt.d===today && stt.v>=3 && stt.v<=14)? stt.v : 14, used=0;
+      function render(anim){
+        Array.prototype.forEach.call(sc, function(el){
+          el.textContent=v+" dona";
+          if(anim){ el.classList.remove("tick"); void el.offsetWidth; el.classList.add("tick"); }
+        });
+        if(sp) sp.style.width=v+"%";
+        ls("cro_stock", JSON.stringify({v:v,d:today}));
+      }
+      function dec(){ if(used>=3||v<=3) return; v--; used++; render(true); }
+      render(false);
+      var m1=false,m2=false;
+      window.addEventListener("scroll", function(){
+        var h=document.documentElement, d=h.scrollTop/(h.scrollHeight-h.clientHeight||1);
+        if(!m1&&d>0.4){ m1=true; setTimeout(dec,900); }
+        if(!m2&&d>0.8){ m2=true; setTimeout(dec,900); }
+      }, {passive:true});
+      setTimeout(dec, 50000);
+    }
+
+    /* --- 2. Exit-intent modal (once per session, min 7s dwell) --- */
+    var modal=document.getElementById("exitModal");
+    var seen=false; try{ seen=!!sessionStorage.getItem("cro_exit"); }catch(e){}
+    if(modal && !seen){
+      var t0=Date.now(), maxY=0, armed=true;
+      function openM(){
+        if(!armed || Date.now()-t0<7000) return;
+        armed=false;
+        try{ sessionStorage.setItem("cro_exit","1"); }catch(e){}
+        modal.hidden=false;
+        document.body.classList.add("exit-open");
+      }
+      function closeM(){ modal.hidden=true; document.body.classList.remove("exit-open"); }
+      document.addEventListener("mouseleave", function(e){ if(e.clientY<=0) openM(); });
+      var lastY=window.scrollY, upAcc=0, lastT=0;
+      window.addEventListener("scroll", function(){
+        var y=window.scrollY, now=Date.now();
+        if(y>maxY) maxY=y;
+        if(y<lastY && now-lastT<140) upAcc+=lastY-y; else if(y>=lastY) upAcc=0;
+        lastY=y; lastT=now;
+        if(maxY>600 && upAcc>450 && y<260) openM();
+      }, {passive:true});
+      modal.addEventListener("click", function(e){ if(e.target.closest("[data-exit-close]")) closeM(); });
+      document.addEventListener("keydown", function(e){ if(e.key==="Escape" && !modal.hidden) closeM(); });
+    }
+  });
+})();

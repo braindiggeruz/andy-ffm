@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://connect.facebook.net" crossorigin>
   <link rel="preload" as="image" href="images/96669f66-baa7-4afd-9e7f-8c4d95304684.webp" fetchpriority="high">
   <link rel="stylesheet" href="style.css?v=5">
-  <link rel="stylesheet" href="cro.css?v=1">
+  <link rel="stylesheet" href="cro.css?v=2">
 
   <!-- Meta Pixel Code (init handled by scripts/app.js via /api/config) -->
   <script>
@@ -34,6 +34,7 @@
 
 <body>
   <div class="mobile-wrapper detailer-theme">
+    <div class="trust-topbar">✓ Qabul qilganda to'lov <span>•</span> 30 kun qaytarish <span>•</span> Yetkazib berish 1-3 kun</div>
     <section class="hero-detailer">
       <div class="hero-header">
         <div class="pre-title">Mavsum xiti — 3 juftlik to'plam</div>
@@ -77,6 +78,10 @@
 
         <input class="field" type="text" name="name" placeholder="Ismingizni kiriting" minlength="2" required id="form_name_input" autocomplete="name" enterkeyhint="next">
         <input class="field" type="tel" name="phone" placeholder="+998 90 123 45 67" minlength="7" required id="phone-input" data-phone-mask inputmode="tel" autocomplete="tel" enterkeyhint="done">
+        <div class="qty-select" role="group" aria-label="Miqdor">
+          <button type="button" class="qty-opt active" data-qty="1">1 to'plam (3 juft)<small>135 000 so'm</small></button>
+          <button type="button" class="qty-opt" data-qty="2">2 to'plam (6 juft)<small>270 000 so'm</small></button>
+        </div>
         <button class="button cta-btn" type="submit" id="form_submit_btn">✓ 135 000 SO'M — BUYURTMA BERISH</button>
         <div class="form-security"><img src="images/icons/icon_lock_48.png" alt="" width="14" height="14"> Qabul qilganda to'lov | <img src="images/icons/icon_return_48.png" alt="" width="14" height="14"> 30 kun qaytarish</div>
         <div class="form-rating"><span class="stars">★★★★★</span> <strong>4.8/5</strong> (2,847 sharh)</div>
@@ -583,6 +588,33 @@
       </div>
     </section>
 
+    <!-- Exit-intent modal (form auto-bound by app.js, full lead flow) -->
+    <div class="exit-modal" id="exitModal" hidden>
+      <div class="exit-backdrop" data-exit-close></div>
+      <div class="exit-card">
+        <button type="button" class="exit-x" data-exit-close aria-label="Yopish">&times;</button>
+        <div class="exit-head">
+          <span class="exit-burst">&minus;60%</span>
+          <p class="exit-kicker">AKSIYA TEZ ORADA TUGAYDI</p>
+          <h3 class="exit-title">BUYURTMA BERISHGA ULGURING</h3>
+        </div>
+        <div class="exit-timer">
+          <span>Aksiya tugashiga qoldi:</span>
+          <b><span class="js-timer-hours">00</span>:<span class="js-timer-minutes">00</span>:<span class="js-timer-seconds">00</span></b>
+        </div>
+        <div class="exit-price">
+          <s><span data-price-old></span> <span data-currency></span></s>
+          <strong><span data-price-new></span> <span data-currency></span></strong>
+        </div>
+        <form class="form order_form exit-form" method="post">
+          <input class="field" type="text" name="name" placeholder="Ismingizni kiriting" minlength="2" required autocomplete="name" enterkeyhint="next">
+          <input class="field" type="tel" name="phone" placeholder="+998 90 123 45 67" minlength="7" required data-phone-mask inputmode="tel" autocomplete="tel" enterkeyhint="done">
+          <button class="button cta-btn" type="submit">✓ BUYURTMA BERISH</button>
+          <div class="form-security"><img src="images/icons/icon_lock_48.png" alt="" width="14" height="14"> Qabul qilganda to'lov | <img src="images/icons/icon_return_48.png" alt="" width="14" height="14"> 30 kun qaytarish</div>
+        </form>
+      </div>
+    </div>
+
     <!-- Final CTA -->
     <section class="hero-detailer final-cta-detailer">
       <div class="hero-header">
@@ -597,6 +629,10 @@
         </div>
         <input class="field" type="text" name="name" placeholder="Ismingizni kiriting" minlength="2" required autocomplete="name" enterkeyhint="next">
         <input class="field" type="tel" name="phone" placeholder="+998 90 123 45 67" minlength="7" required data-phone-mask inputmode="tel" autocomplete="tel" enterkeyhint="done">
+        <div class="qty-select" role="group" aria-label="Miqdor">
+          <button type="button" class="qty-opt active" data-qty="1">1 to'plam (3 juft)<small>135 000 so'm</small></button>
+          <button type="button" class="qty-opt" data-qty="2">2 to'plam (6 juft)<small>270 000 so'm</small></button>
+        </div>
         <button class="button cta-btn" type="submit">✓ 135 000 SO'M — BUYURTMA BERISH</button>
         <div class="form-security"><img src="images/icons/icon_lock_48.png" alt="" width="14" height="14"> Qabul qilganda to'lov | <img src="images/icons/icon_return_48.png" alt="" width="14" height="14"> 30 kun qaytarish</div>
         <div class="form-rating"><span class="stars">★★★★★</span> <strong>4.8/5</strong> (2,847 sharh)</div>
@@ -632,7 +668,7 @@
 
   <script src="scripts/script.js?v=5"></script>
   <script src="scripts/app.js?v=6"></script>
-  <script src="scripts/cro.js?v=1" defer></script>
+  <script src="scripts/cro.js?v=2" defer></script>
 </body>
 
 </html>

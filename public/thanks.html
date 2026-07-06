@@ -22,137 +22,89 @@
   <!-- End Meta Pixel Code -->
 
   <style>
-    @media (prefers-color-scheme: dark) {
-      html, body { background: #f2f6f0 !important; color: #1a2e22 !important; }
-      :root { color-scheme: only light; }
-    }
-    body { background: #f2f6f0; }
-    .thanks-wrap {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .thanks-card {
-      max-width: 480px;
-      width: 100%;
-      background: #fff;
-      border-radius: 20px;
-      padding: 36px 24px;
-      text-align: center;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
-    }
-    .thanks-icon {
-      width: 76px;
-      height: 76px;
-      margin: 0 auto 20px;
-      border-radius: 50%;
-      background: #1C864C;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 38px;
-      color: #fff;
-    }
-    .thanks-title {
-      font-size: 26px;
-      font-weight: 800;
-      color: #1a2e22;
-      margin: 0 0 10px;
-      line-height: 1.2;
-    }
-    .thanks-text {
-      font-size: 16px;
-      line-height: 1.5;
-      color: #445;
-      margin-bottom: 20px;
-    }
-    .call-window {
-      background: #E8F5EE;
-      border: 1px solid #1C864C;
-      border-radius: 12px;
-      padding: 14px 16px;
-      font-size: 15px;
-      font-weight: 700;
-      color: #1A2E22;
-      margin-bottom: 20px;
-      line-height: 1.45;
-    }
-    .call-window strong { color: #1C864C; }
-    .order-recap {
-      text-align: left;
-      background: #F7FBF8;
-      border: 1px solid rgba(28, 134, 76, 0.18);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 20px;
-    }
-    .order-recap-title {
-      font-size: 12px;
-      font-weight: 800;
-      text-transform: uppercase;
-      color: #4A6555;
-      margin: 0 0 10px;
-      letter-spacing: 0.5px;
-    }
-    .recap-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      font-size: 14px;
-      color: #1A2E22;
-      padding: 6px 0;
-      border-bottom: 1px solid rgba(28, 134, 76, 0.08);
-    }
-    .recap-row:last-child { border-bottom: none; }
-    .recap-row .val { font-weight: 800; text-align: right; }
-    .recap-row .val.green { color: #1C864C; }
-    .thanks-note {
-      font-size: 14px;
-      color: #4A6555;
-      line-height: 1.5;
-      margin: 0;
-    }
-    .thanks-note strong { color: #1C864C; }
+    :root{--g:#1C864C;--gd:linear-gradient(135deg,#1C864C 0%,#16703F 100%);--tm:#1A2E22;--tb:#4A6555;--bd:rgba(28,134,76,.18)}
+    @media (prefers-color-scheme: dark){ html,body{background:#f2f6f0!important;color:#1a2e22!important} :root{color-scheme:only light} }
+    body{background:linear-gradient(180deg,#FFFFFF 0%,#E8F5EE 40%,#C8EBE0 100%);margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+    .thanks-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden}
+    .cf{position:absolute;top:-12px;width:9px;height:14px;border-radius:2px;opacity:.85;animation:cfFall 3.2s ease-in forwards}
+    @keyframes cfFall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(105vh) rotate(560deg);opacity:0}}
+    .thanks-card{max-width:480px;width:100%;background:#fff;border-radius:22px;padding:34px 24px 26px;text-align:center;box-shadow:0 18px 60px rgba(28,134,76,.22);animation:cardIn .5s cubic-bezier(.2,1.3,.4,1)}
+    @keyframes cardIn{from{transform:translateY(30px) scale(.95);opacity:0}to{transform:none;opacity:1}}
+    .ticon{width:84px;height:84px;margin:0 auto 16px;border-radius:50%;background:var(--gd);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(28,134,76,.4);animation:pop .55s cubic-bezier(.2,1.6,.4,1) .15s backwards}
+    @keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+    .ticon svg{width:44px;height:44px}
+    .ticon path{stroke:#fff;stroke-width:3.2;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:30;stroke-dashoffset:30;animation:draw .5s ease-out .5s forwards}
+    @keyframes draw{to{stroke-dashoffset:0}}
+    .thanks-title{font-size:25px;font-weight:900;color:var(--tm);margin:0 0 6px;line-height:1.2}
+    .thanks-sub{font-size:14px;color:var(--tb);margin:0 0 20px}
+    .steps{display:flex;text-align:center;margin:0 0 20px;padding:14px 6px;background:#F7FBF8;border:1px solid var(--bd);border-radius:14px}
+    .step{flex:1;position:relative;font-size:10.5px;font-weight:700;color:var(--tb);line-height:1.3}
+    .step i{display:flex;align-items:center;justify-content:center;width:30px;height:30px;margin:0 auto 6px;border-radius:50%;background:#E2EFE7;color:var(--tb);font-style:normal;font-weight:900;font-size:13px;position:relative;z-index:1}
+    .step:not(:last-child)::after{content:"";position:absolute;top:15px;left:calc(50% + 17px);right:calc(-50% + 17px);height:2px;background:#DCEAE1}
+    .step.done i{background:var(--gd);color:#fff}
+    .step.now i{background:#fff;border:2px solid var(--g);color:var(--g);animation:nowPulse 1.6s infinite}
+    .step.now{color:var(--g)}
+    @keyframes nowPulse{0%,100%{box-shadow:0 0 0 0 rgba(28,134,76,.35)}50%{box-shadow:0 0 0 7px rgba(28,134,76,0)}}
+    .call-window{background:linear-gradient(135deg,#E8F5EE,#D0EDDB);border:1.5px solid var(--g);border-radius:14px;padding:14px 16px;font-size:15px;font-weight:700;color:var(--tm);margin-bottom:14px;line-height:1.45}
+    .call-window strong{color:var(--g)}
+    .save-hint{display:inline-block;background:#FFF6E4;color:#8a5a00;font-size:12.5px;font-weight:700;border-radius:999px;padding:7px 14px;margin-bottom:20px}
+    .order-recap{text-align:left;background:#F7FBF8;border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px}
+    .order-recap-title{font-size:12px;font-weight:800;text-transform:uppercase;color:var(--tb);margin:0 0 10px;letter-spacing:.5px}
+    .recap-row{display:flex;justify-content:space-between;gap:10px;font-size:14px;color:var(--tm);padding:6px 0;border-bottom:1px solid rgba(28,134,76,.08)}
+    .recap-row:last-child{border-bottom:none}
+    .recap-row .val{font-weight:800;text-align:right}
+    .recap-row .val.green{color:var(--g)}
+    .thanks-note{font-size:13.5px;color:var(--tb);line-height:1.55;margin:0 0 18px}
+    .thanks-note strong{color:var(--g)}
+    .trust-line{border-top:1px solid rgba(28,134,76,.12);padding-top:14px;font-size:12.5px;color:var(--tb)}
+    .trust-line .st{color:#F2B01E;letter-spacing:1px}
+    .trust-line b{color:var(--tm)}
   </style>
 </head>
 <body data-page="thanks">
-  <div class="thanks-wrap">
+  <div class="thanks-wrap" id="tw">
     <div class="thanks-card" data-testid="thanks-card">
-      <div class="thanks-icon">&#10003;</div>
+      <div class="ticon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
       <h1 class="thanks-title" data-testid="thanks-title">Buyurtmangiz qabul qilindi!</h1>
+      <p class="thanks-sub">Rahmat! Siz to'g'ri tanlov qildingiz</p>
+
+      <div class="steps">
+        <div class="step done"><i>✓</i>Buyurtma<br>qabul qilindi</div>
+        <div class="step now"><i>2</i>Operator<br>qo'ng'irog'i</div>
+        <div class="step"><i>3</i>Yetkazib berish<br>1–3 kun</div>
+        <div class="step"><i>4</i>Qabul qilganda<br>to'lov</div>
+      </div>
 
       <div class="call-window">
         &#128222; Operatorimiz <strong>15&ndash;30 daqiqa ichida</strong> qo&#8216;ng&#8216;iroq qilib buyurtmani tasdiqlaydi
       </div>
+      <span class="save-hint">Telefoningizni yoningizda saqlang &mdash; notanish raqamdan qo&#8216;ng&#8216;iroq bo&#8216;lishi mumkin</span>
 
       <div class="order-recap">
         <p class="order-recap-title">Buyurtmangiz</p>
-        <div class="recap-row">
-          <span>Mahsulot:</span>
-          <span class="val">Barmoqli paypoqlar (3 juft)</span>
-        </div>
-        <div class="recap-row">
-          <span>Narxi:</span>
-          <span class="val green">135 000 so&#8216;m</span>
-        </div>
-        <div class="recap-row">
-          <span>To&#8216;lov:</span>
-          <span class="val">Qabul qilganda (naqd/karta)</span>
-        </div>
-        <div class="recap-row">
-          <span>Yetkazib berish:</span>
-          <span class="val">1&ndash;3 kun</span>
-        </div>
+        <div class="recap-row"><span>Mahsulot:</span><span class="val">Barmoqli paypoqlar (3 juft)</span></div>
+        <div class="recap-row"><span>Narxi:</span><span class="val green">135 000 so&#8216;m</span></div>
+        <div class="recap-row"><span>To&#8216;lov:</span><span class="val">Qabul qilganda (naqd/karta)</span></div>
+        <div class="recap-row"><span>Yetkazib berish:</span><span class="val">1&ndash;3 kun</span></div>
       </div>
 
       <p class="thanks-note">
-        Telefoningizni yoningizda saqlang — notanish raqamdan qo&#8216;ng&#8216;iroq bo&#8216;lishi mumkin.<br>
-        <strong>Javob bermasangiz, qayta qo&#8216;ng&#8216;iroq qilamiz.</strong>
+        <strong>Javob bermasangiz, qayta qo&#8216;ng&#8216;iroq qilamiz.</strong><br>
+        Buyurtmani tekshirgandan keyingina to&#8216;laysiz &mdash; 30 kun qaytarish kafolati.
       </p>
+
+      <div class="trust-line"><span class="st">★★★★★</span> <b>4.8/5</b> &mdash; 2,847 mijoz ishonchi</div>
     </div>
   </div>
+  <script>
+    (function(){
+      var w=document.getElementById("tw"),c=["#1C864C","#F2B01E","#5BBE8B","#C0392B","#2E86C1"];
+      for(var i=0;i<14;i++){var d=document.createElement("span");d.className="cf";
+        d.style.left=(4+Math.random()*92)+"%";d.style.background=c[i%5];
+        d.style.animationDelay=(Math.random()*0.9)+"s";d.style.animationDuration=(2.4+Math.random()*1.6)+"s";
+        w.appendChild(d);}
+    })();
+  </script>
   <script src="scripts/app.js?v=6"></script>
 </body>
 </html>
