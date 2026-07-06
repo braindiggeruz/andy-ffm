@@ -363,33 +363,53 @@
         }
 
         track("api_started");
-        fetch("/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), credentials: "same-origin" })
-          .then(function (resp) {
-            return resp.json().catch(function () { return {}; }).then(function (data) { return { resp: resp, data: data }; });
-          })
-          .then(function (r) {
-            if (r.resp.ok && r.data && r.data.accepted) {
-              var eid = r.data.event_id || eventId;
-              if (CONFIG.mock_mode || r.data.mode === "mock") {
-                track("mock_buyo_accepted", { event_id: eid });
+        // One automatic retry for TRANSIENT failures only (BUYO 5xx / rate
+        // limit / network). Safe: the server dedupes by submission_id in D1,
+        // and InitiateCheckout has already fired exactly once above.
+        var RETRYABLE = { buyo_5xx: 1, rate_limit: 1, network_error: 1 };
+        function submitLead(attempt) {
+          fetch("/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), credentials: "same-origin" })
+            .then(function (resp) {
+              return resp.json().catch(function () { return {}; }).then(function (data) { return { resp: resp, data: data }; });
+            })
+            .then(function (r) {
+              if (r.resp.ok && r.data && r.data.accepted) {
+                var eid = r.data.event_id || eventId;
+                if (CONFIG.mock_mode || r.data.mode === "mock") {
+                  track("mock_buyo_accepted", { event_id: eid });
+                } else {
+                  fireLead(eid);
+                  track("buyo_accepted", { event_id: eid });
+                  track("lead_success", { event_id: eid });
+                }
+                // Give the pixel a moment to flush, then go to the thank-you page.
+                setTimeout(function () { window.location.href = "/thanks"; }, 450);
               } else {
-                fireLead(eid);
-                track("buyo_accepted", { event_id: eid });
-                track("lead_success", { event_id: eid });
+                var code = (r.data && r.data.code) || "unknown";
+                if (RETRYABLE[code] && attempt === 0) {
+                  track("lead_retry", { code: code });
+                  if (btn) btn.textContent = "Qayta urinilmoqda…";
+                  setTimeout(function () { submitLead(1); }, 2500);
+                  return;
+                }
+                track("buyo_rejected", { http: r.resp.status, code: code });
+                showFormError(form, "Buyurtmani yuborib bo'lmadi. Iltimos, bir oz kutib \"BUYURTMA BERISH\" tugmasini qayta bosing.");
+                resetBtn();
               }
-              // Give the pixel a moment to flush, then go to the thank-you page.
-              setTimeout(function () { window.location.href = "thanks.html"; }, 450);
-            } else {
-              track("buyo_rejected", { http: r.resp.status, code: (r.data && r.data.code) || "unknown" });
-              showFormError(form, "Buyurtmani yuborib bo'lmadi. Iltimos, bir oz kutib \"BUYURTMA BERISH\" tugmasini qayta bosing.");
+            })
+            .catch(function () {
+              if (attempt === 0) {
+                track("lead_retry", { code: "fetch_error" });
+                if (btn) btn.textContent = "Qayta urinilmoqda…";
+                setTimeout(function () { submitLead(1); }, 2500);
+                return;
+              }
+              track("api_error");
+              showFormError(form, "Ulanish bilan muammo. Internet aloqasini tekshirib qayta urinib ko'ring.");
               resetBtn();
-            }
-          })
-          .catch(function () {
-            track("api_error");
-            showFormError(form, "Ulanish bilan muammo. Internet aloqasini tekshirib qayta urinib ko'ring.");
-            resetBtn();
-          });
+            });
+        }
+        submitLead(0);
       });
     });
   }

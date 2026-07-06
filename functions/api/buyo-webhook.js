@@ -35,9 +35,11 @@ export const onRequestPost = async ({ request, env }) => {
       attrs = {},
     } = payload;
 
-    // Only process "created" status (when lead is first created in BUYO)
-    // Later we can add "accepted" status for confirmed purchases
-    if (status !== "created" && status !== "accepted") {
+    // Process lead-creation and confirmation statuses. The Purchase event_id
+    // is stable per lead_id, so if BUYO sends BOTH "created" and a later
+    // confirmation for the same lead, Meta deduplicates them into one Purchase.
+    const OK_STATUSES = ["created", "accepted", "confirmed", "approved"];
+    if (OK_STATUSES.indexOf(status) === -1) {
       console.log(`[BUYO Webhook] Skipping status: ${status}`);
       return new Response(JSON.stringify({ ok: true, skipped: true, reason: `status=${status}` }), {
         status: 200,
