@@ -1,0 +1,152 @@
+/* ============================================================
+   CRO cosmetic layer — additive only, loads AFTER style.css.
+   No copy changes. No changes to app.js event/postback logic.
+   ============================================================ */
+
+/* --- anchor landing position for #order_form --- */
+#order_form { scroll-margin-top: 16px; }
+
+/* --- 1. Form: card emphasis (tablet/desktop; mobile keeps bottom sheet) --- */
+@media (min-width: 481px) {
+  .order_form {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 22px 20px;
+    box-shadow: 0 14px 40px rgba(28, 134, 76, 0.16);
+  }
+}
+
+/* --- 2. Fields: comfortable tap targets + iOS auto-zoom fix --- */
+.field {
+  min-height: 54px;
+  border-width: 1.5px;
+}
+@media (max-width: 480px) {
+  .order_form .field {
+    font-size: 16px; /* was 14px -> iOS zoomed the page on focus */
+    padding: 13px 16px;
+    min-height: 50px;
+  }
+}
+.field:focus {
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 3px rgba(28, 134, 76, 0.12);
+}
+
+/* --- 3. Inline "valid" feedback: green check inside the field --- */
+.field.field--valid {
+  border-color: var(--accent-green);
+  padding-right: 44px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231C864C' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 20px 20px;
+}
+
+/* --- 4. Trust chips above the form (hidden on mobile sheet to save space) --- */
+.form-trust-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-green);
+}
+.form-trust-top img { width: 16px; height: 16px; vertical-align: -3px; }
+.form-trust-top .tt-dot { color: rgba(28, 134, 76, 0.35); }
+@media (max-width: 480px) { .form-trust-top { display: none; } }
+
+/* --- 5. Rating row under the CTA (existing 4.8/5 data, at decision point) --- */
+.form-rating {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-body);
+  margin-top: 2px;
+}
+.form-rating .stars { color: #F2B01E; letter-spacing: 1px; margin-right: 4px; }
+.form-rating strong { color: var(--text-main); }
+@media (max-width: 480px) { .form-rating { font-size: 11px; margin-top: 0; } }
+
+/* --- 6. Security line under button: bigger, more visible --- */
+.form-security { font-size: 13px; opacity: 1; }
+.form-security img { width: 18px !important; height: 18px !important; vertical-align: -4px; }
+@media (max-width: 480px) {
+  .form-security { font-size: 11px; }
+  .form-security img { width: 15px !important; height: 15px !important; vertical-align: -3px; }
+}
+
+/* --- 7. Price: sale pill (fed by existing [data-sale]) + set note --- */
+.sale-pill {
+  display: inline-block;
+  margin-top: 6px;
+  background: var(--accent-gradient);
+  color: #FFF;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  box-shadow: 0 3px 10px rgba(28, 134, 76, 0.3);
+}
+.sale-pill[hidden] { display: none !important; }
+.price-note {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-body);
+  margin: -12px 0 20px;
+}
+
+/* --- 8. CTA: soft glow pulse (attention without layout jank) --- */
+@keyframes cro-glow {
+  0%, 84%, 100% { box-shadow: 0 8px 20px rgba(28, 134, 76, 0.35); }
+  92% { box-shadow: 0 8px 32px rgba(28, 134, 76, 0.6); }
+}
+.order_form .cta-btn { animation: cro-glow 3.6s ease-in-out infinite; }
+.order_form .cta-btn[disabled] {
+  animation: none;
+  opacity: 0.82;
+  cursor: wait;
+}
+.order_form .cta-btn[disabled]::after { display: none; } /* pause shine while sending */
+
+/* --- 9. Timer: tabular digits, no jumping --- */
+.timer-val { font-variant-numeric: tabular-nums; }
+
+/* --- 10. Sticky CTA bar: extend to tablets (481-768px) --- */
+@media (min-width: 481px) and (max-width: 768px) {
+  .sticky-cta-bar { display: flex; }
+}
+@media (min-width: 769px) {
+  .sticky-cta-bar { display: none; }
+}
+.sticky-cta-bar.sticky-hidden { transform: translateY(130%) !important; }
+
+/* --- 11. Quiet mode: no toast popups while user is typing --- */
+body.form-focused .social-proof-toast { display: none !important; }
+
+/* --- 12. Scroll-in reveal (JS-gated: no-JS users see everything) --- */
+html.cro-js .cro-fade {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+html.cro-js .cro-fade.cro-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  html.cro-js .cro-fade { opacity: 1; transform: none; transition: none; }
+  .order_form .cta-btn, .sticky-cta-btn { animation: none; }
+}
+
+/* --- 13. Mobile hero compaction: price + form reachable faster --- */
+@media (max-width: 480px) {
+  .hero-detailer { padding-top: 22px; }
+  .hero-header { margin-bottom: 18px; }
+  .product-image-wrapper { margin-bottom: 18px; }
+  .price-block { margin-bottom: 14px; padding: 16px 18px; }
+  .price-note { margin: -8px 0 14px; }
+}

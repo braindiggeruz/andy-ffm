@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://connect.facebook.net" crossorigin>
   <link rel="preload" as="image" href="images/96669f66-baa7-4afd-9e7f-8c4d95304684.webp" fetchpriority="high">
   <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="cro.css?v=1">
 
   <!-- Meta Pixel Code (init handled by scripts/app.js via /api/config) -->
   <script>
@@ -54,10 +55,17 @@
         <div class="price-item new">
           <span class="price-text">Aksiyadagi narx:</span>
           <span class="price-value"><span data-price-new></span> <span data-currency></span></span>
+          <span class="sale-pill" hidden>&minus;<span data-sale></span>%</span>
         </div>
       </div>
+      <div class="price-note">3 juftlik to'plam</div>
 
       <form action="send.php" class="form order_form" method="post" id="order_form">
+        <div class="form-trust-top">
+          <span><img src="images/icons/icon_card_48.png" alt="" width="16" height="16"> Qabul qilganda to'lov</span>
+          <span class="tt-dot">•</span>
+          <span><img src="images/icons/icon_delivery_48.png" alt="" width="16" height="16"> Yetkazib berish 1-3 kun</span>
+        </div>
         <div class="form-title">
           <span class="form-title-main">BUYURTMA — 30 SONIYA</span>
           <span class="form-title-sub">Faqat ism va telefon raqami kifoya</span>
@@ -71,6 +79,7 @@
         <input class="field" type="tel" name="phone" placeholder="+998 90 123 45 67" minlength="7" required id="phone-input" data-phone-mask inputmode="tel" autocomplete="tel" enterkeyhint="done">
         <button class="button cta-btn" type="submit" id="form_submit_btn">✓ 135 000 SO'M — BUYURTMA BERISH</button>
         <div class="form-security"><img src="images/icons/icon_lock_48.png" alt="" width="14" height="14"> Qabul qilganda to'lov | <img src="images/icons/icon_return_48.png" alt="" width="14" height="14"> 30 kun qaytarish</div>
+        <div class="form-rating"><span class="stars">★★★★★</span> <strong>4.8/5</strong> (2,847 sharh)</div>
       </form>
 
       <div class="trust-block">
@@ -581,10 +590,16 @@
         <h1 class="main-title">BUYURTMA BERISHGA ULGURING <br><span class="text-accent">ENG PAST NARXDA</span></h1>
       </div>
       <form class="form order_form" method="post">
+        <div class="form-trust-top">
+          <span><img src="images/icons/icon_card_48.png" alt="" width="16" height="16"> Qabul qilganda to'lov</span>
+          <span class="tt-dot">•</span>
+          <span><img src="images/icons/icon_delivery_48.png" alt="" width="16" height="16"> Yetkazib berish 1-3 kun</span>
+        </div>
         <input class="field" type="text" name="name" placeholder="Ismingizni kiriting" minlength="2" required autocomplete="name" enterkeyhint="next">
         <input class="field" type="tel" name="phone" placeholder="+998 90 123 45 67" minlength="7" required data-phone-mask inputmode="tel" autocomplete="tel" enterkeyhint="done">
         <button class="button cta-btn" type="submit">✓ 135 000 SO'M — BUYURTMA BERISH</button>
         <div class="form-security"><img src="images/icons/icon_lock_48.png" alt="" width="14" height="14"> Qabul qilganda to'lov | <img src="images/icons/icon_return_48.png" alt="" width="14" height="14"> 30 kun qaytarish</div>
+        <div class="form-rating"><span class="stars">★★★★★</span> <strong>4.8/5</strong> (2,847 sharh)</div>
       </form>
     </section>
 
@@ -617,6 +632,7 @@
 
   <script src="scripts/script.js?v=5"></script>
   <script src="scripts/app.js?v=6"></script>
+  <script src="scripts/cro.js?v=1" defer></script>
 </body>
 
 </html>
