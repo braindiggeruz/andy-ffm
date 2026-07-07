@@ -7,76 +7,86 @@
  * Converts BUYO lead data → Meta CAPI Purchase event
  */
 
-export const onRequestPost = async ({ request, env }) => {
+// Pull the first non-empty value across several possible field names.
+function pick(obj, keys) {
+  for (const k of keys) {
+    if (obj && obj[k] != null && obj[k] !== "") return obj[k];
+  }
+  return null;
+}
+
+// Best-effort raw log to D1 so we can inspect BUYO's real payload shape.
+async function logWebhook(env, row) {
   try {
-    const payload = await request.json();
-    
-    // Log incoming webhook
-    console.log("[BUYO Webhook] Received:", JSON.stringify(payload, null, 2));
+    if (!env.AUDIT_DB || !env.AUDIT_DB.prepare) return;
+    await env.AUDIT_DB.prepare(
+      "INSERT INTO webhook_log (source, status, lead_id, fired, capi_http, raw) VALUES (?1,?2,?3,?4,?5,?6)"
+    ).bind("buyo", row.status || null, row.lead_id || null, row.fired ? 1 : 0, row.capi_http || null, (row.raw || "").slice(0, 2000)).run();
+  } catch (e) { /* never block the webhook */ }
+}
 
-    // Validate required fields
-    if (!payload || !payload.lead_id) {
-      console.warn("[BUYO Webhook] Missing lead_id");
-      return new Response(JSON.stringify({ ok: false, error: "Missing lead_id" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
+export const onRequestPost = async ({ request, env }) => {
+  let rawText = "";
+  let payload = {};
+  try {
+    rawText = await request.text();
+    try { payload = JSON.parse(rawText); } catch { payload = {}; }
+
+    // Tolerant field extraction — BUYO field names are not guaranteed.
+    const leadId = pick(payload, ["lead_id", "leadId", "id", "lead", "uuid", "click_id", "clickId", "transaction_id", "order_id"]);
+    const statusRaw = pick(payload, ["status", "event", "state", "trigger", "type", "lead_status"]);
+    const status = String(statusRaw || "").toLowerCase();
+    const phone = pick(payload, ["phone", "phone_number", "tel", "telephone", "customer_phone", "msisdn"]);
+    const name = pick(payload, ["name", "full_name", "customer_name", "client_name", "fio"]);
+    const email = pick(payload, ["email", "e_mail", "mail"]);
+    const order_value = pick(payload, ["order_value", "value", "amount", "sum", "price", "total"]);
+    const created_at = pick(payload, ["created_at", "createdAt", "timestamp", "time", "date"]);
+    const attrs = (payload.attrs && typeof payload.attrs === "object") ? payload.attrs : {};
+
+    // Negative statuses NEVER fire Purchase (safety net even though the BUYO
+    // postback trigger should already filter to confirmed leads only).
+    const NEGATIVE = ["reject", "rejected", "declin", "decline", "declined", "trash", "spam", "cancel", "canceled", "cancelled", "hold", "fail", "failed", "invalid", "duplicate"];
+    const isNegative = NEGATIVE.some(function (n) { return status.indexOf(n) !== -1; });
+
+    // Need at least one identifier (lead id or phone) to build a stable event.
+    if (!leadId && !phone) {
+      await logWebhook(env, { status: status, lead_id: null, fired: false, raw: rawText });
+      return new Response(JSON.stringify({ ok: false, error: "no_identifier" }), {
+        status: 400, headers: { "Content-Type": "application/json" },
       });
     }
 
-    // Extract BUYO lead data
-    const {
-      lead_id,
-      status,
-      phone,
-      name,
-      email,
-      order_value,
-      created_at,
-      attrs = {},
-    } = payload;
-
-    // Process lead-creation and confirmation statuses. The Purchase event_id
-    // is stable per lead_id, so if BUYO sends BOTH "created" and a later
-    // confirmation for the same lead, Meta deduplicates them into one Purchase.
-    const OK_STATUSES = ["created", "accepted", "confirmed", "approved"];
-    if (OK_STATUSES.indexOf(status) === -1) {
-      console.log(`[BUYO Webhook] Skipping status: ${status}`);
-      return new Response(JSON.stringify({ ok: true, skipped: true, reason: `status=${status}` }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
+    if (isNegative) {
+      await logWebhook(env, { status: status, lead_id: leadId, fired: false, raw: rawText });
+      return new Response(JSON.stringify({ ok: true, skipped: true, reason: "status=" + status }), {
+        status: 200, headers: { "Content-Type": "application/json" },
       });
     }
 
-    // Send to Meta CAPI
+    // Fire Purchase. The BUYO postback trigger (set to "Подтверждён" in the
+    // dashboard) already restricts delivery to confirmed leads, so any
+    // non-negative postback that reaches here is a confirmed sale.
     const capiResult = await sendToMetaCAPI({
-      lead_id,
-      phone,
-      name,
-      email,
-      order_value,
-      created_at,
-      attrs,
-      env,
+      lead_id: leadId, phone, name, email, order_value, created_at, attrs, env,
     });
+
+    await logWebhook(env, { status: status, lead_id: leadId, fired: capiResult.ok, capi_http: capiResult.httpStatus, raw: rawText });
 
     if (!capiResult.ok) {
       console.error("[BUYO Webhook] Meta CAPI failed:", capiResult.error);
       return new Response(JSON.stringify({ ok: false, error: capiResult.error }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
+        status: 500, headers: { "Content-Type": "application/json" },
       });
     }
 
-    console.log("[BUYO Webhook] Success:", capiResult);
     return new Response(JSON.stringify({ ok: true, capi_event_id: capiResult.event_id }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
+      status: 200, headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
+    await logWebhook(env, { status: "exception", lead_id: null, fired: false, raw: rawText || String(err.message) });
     console.error("[BUYO Webhook] Error:", err.message);
     return new Response(JSON.stringify({ ok: false, error: err.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
+      status: 500, headers: { "Content-Type": "application/json" },
     });
   }
 };
@@ -141,11 +151,16 @@ async function sendToMetaCAPI({ lead_id, phone, name, email, order_value, create
     content_type: "product",
   };
 
-  // Build CAPI event.
-  // Stable event_id (no random suffix) so BUYO webhook retries for the same
-  // lead deduplicate in Meta instead of counting duplicate Purchases.
-  const eventTime = Math.floor(new Date(created_at || Date.now()).getTime() / 1000);
-  const eventId = `buyo_purchase_${lead_id}`;
+  // Stable dedup key per lead: lead_id if present, else the phone hash.
+  // Retries / duplicate postbacks for the same lead collapse to one Purchase.
+  const dedupKey = lead_id ? String(lead_id) : (phoneHash ? phoneHash.slice(0, 24) : null);
+  const eventId = "buyo_purchase_" + (dedupKey || Math.floor(Date.now() / 1000));
+  // event_time = confirmation time (now). Avoids "event too old/future"
+  // rejections from mis-parsed BUYO timestamps.
+  const eventTime = Math.floor(Date.now() / 1000);
+
+  // external_id must be a hashed identifier for Advanced Matching.
+  if (dedupKey) userData.external_id = [await sha256Hex(String(dedupKey).toLowerCase())];
 
   const capiPayload = {
     data: [
@@ -153,7 +168,7 @@ async function sendToMetaCAPI({ lead_id, phone, name, email, order_value, create
         event_name: "Purchase",
         event_time: eventTime,
         event_id: eventId,
-        external_id: lead_id,
+        action_source: "website",
         event_source_url: attrs.landing_url || "https://socks.savdomix.uz",
         user_data: userData,
         custom_data: customData,
@@ -175,14 +190,14 @@ async function sendToMetaCAPI({ lead_id, phone, name, email, order_value, create
 
     if (!response.ok) {
       console.error("[Meta CAPI] Error response:", result);
-      return { ok: false, error: result.error?.message || "Unknown error" };
+      return { ok: false, httpStatus: response.status, error: result.error?.message || "Unknown error" };
     }
 
     console.log("[Meta CAPI] Success:", result);
-    return { ok: true, event_id: eventId, capi_response: result };
+    return { ok: true, httpStatus: response.status, event_id: eventId, capi_response: result };
   } catch (err) {
     console.error("[Meta CAPI] Fetch error:", err.message);
-    return { ok: false, error: err.message };
+    return { ok: false, httpStatus: 0, error: err.message };
   }
 }
 
