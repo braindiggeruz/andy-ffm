@@ -23,6 +23,14 @@ PRODUCT_CURRENCY = "UZS"
 PRODUCT_CONTENT_NAME = "Barmoqli paypoqlar (3 juft)"
 PRODUCT_CONTENT_ID = "socks-with-toes-v1"
 
+# D1 audit DB (lead dedup + funnel audit + webhook payload log).
+# Must be declared here: wrangler pages deploy uses this file as the source of
+# truth for bindings and ignores dashboard-configured ones.
+[[d1_databases]]
+binding = "AUDIT_DB"
+database_name = "savdomix-socks-audit"
+database_id = "1ff27b93-94da-4258-b439-1b6863e94f00"
+
 [env.preview.vars]
 META_PIXEL_ID = "2935651803447339"
 BUYO_API_BASE = "https://api.buyo.network"
@@ -33,3 +41,8 @@ PRODUCT_SALE_PCT = "60"
 PRODUCT_CURRENCY = "UZS"
 PRODUCT_CONTENT_NAME = "Barmoqli paypoqlar (3 juft)"
 PRODUCT_CONTENT_ID = "socks-with-toes-v1"
+
+[[env.preview.d1_databases]]
+binding = "AUDIT_DB"
+database_name = "savdomix-socks-audit"
+database_id = "1ff27b93-94da-4258-b439-1b6863e94f00"
