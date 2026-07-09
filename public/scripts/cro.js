@@ -62,16 +62,20 @@
       });
     });
 
-    /* 4. Sticky bar: hidden while hero form on screen; smooth scroll + focus on tap */
+    /* 4. Sticky bar: hidden while ANY order form is on screen; smooth scroll + focus on tap */
     try {
       var bar = document.querySelector(".sticky-cta-bar");
       var heroForm = document.getElementById("order_form");
-      if (bar && heroForm && "IntersectionObserver" in window) {
-        new IntersectionObserver(function (entries) {
-          entries.forEach(function (en) {
-            bar.classList.toggle("sticky-hidden", en.isIntersecting);
-          });
-        }, { threshold: 0.15 }).observe(heroForm);
+      var allForms = document.querySelectorAll("form.order_form");
+      if (bar && allForms.length && "IntersectionObserver" in window) {
+        var visMap = new Map();
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) { visMap.set(en.target, en.isIntersecting); });
+          var anyVisible = false;
+          visMap.forEach(function (v) { if (v) anyVisible = true; });
+          bar.classList.toggle("sticky-hidden", anyVisible);
+        }, { threshold: 0.15 });
+        Array.prototype.forEach.call(allForms, function (f) { io.observe(f); });
       }
       if (bar && heroForm) {
         var lnk = bar.querySelector("a");

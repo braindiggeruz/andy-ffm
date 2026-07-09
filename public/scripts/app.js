@@ -66,7 +66,10 @@
 
   // --- Meta Pixel ---
   var FIRED = { PageView: false, ViewContent: false, InitiateCheckout: false, Lead: false };
-  var CONFIG = { pixel_id: "", value: 135000, currency: "UZS", content_name: "Barmoqli paypoqlar (3 juft)", content_id: "toe-socks-3pairs-v1", mock_mode: false };
+  // Pixel ID hardcoded as fallback (same as noscript tag) so PageView/ViewContent
+  // fire IMMEDIATELY without waiting for the /api/config network round-trip.
+  // /api/config still loads and can override value/mock_mode for the Lead flow.
+  var CONFIG = { pixel_id: "2935651803447339", value: 135000, currency: "UZS", content_name: "Barmoqli paypoqlar (3 juft)", content_id: "toe-socks-3pairs-v1", mock_mode: false };
 
   function pixelInit() {
     if (!window.fbq || !CONFIG.pixel_id) return;
@@ -257,13 +260,18 @@
     if (box) box.parentNode.removeChild(box);
   }
 
-  // --- FormStart (once) ---
+  // --- FormStart (once) — browser + server CAPI mirror, same event_id dedup ---
   var formStartFired = false;
   function fireFormStartOnce() {
     if (formStartFired) return;
     formStartFired = true;
-    if (window.fbq && window.__fbq_inited__) fbq("trackCustom", "FormStart");
-    track("form_start");
+    var eid = uuidv4();
+    if (window.fbq) {
+      pixelInit();
+      fbq("trackCustom", "FormStart", {}, { eventID: eid });
+    }
+    sendServerEvent("FormStart", eid);
+    track("form_start", { event_id: eid });
   }
 
   // --- submit ---
@@ -346,6 +354,19 @@
           external_id: getExternalId(),
           client_event_id: eventId,
         };
+
+        // Advanced Matching upgrade: pass phone+first name to the browser pixel
+        // (fbq hashes them client-side) so IC/Lead get max Event Match Quality.
+        try {
+          if (window.fbq && CONFIG.pixel_id) {
+            fbq("init", CONFIG.pixel_id, {
+              ph: phoneCheck.value,
+              fn: nameCheck.value.split(/\s+/)[0].toLowerCase(),
+              external_id: getExternalId(),
+              country: "uz",
+            });
+          }
+        } catch (e) {}
 
         // InitiateCheckout — once, valid submit only. Browser + server CAPI, same event_id.
         fireInitiateCheckout(eventId);
@@ -457,10 +478,12 @@
 
   function boot() {
     captureAttribution();
+    // Fire pixel events IMMEDIATELY (pixel_id is a static fallback) — recovers
+    // signal from fast-bouncing mobile users who leave before /api/config returns.
+    pixelInit();
+    firePageView();
+    if (!IS_THANKS) fireViewContent();
     loadConfig().then(function () {
-      pixelInit();
-      firePageView();
-      if (!IS_THANKS) fireViewContent();
       initFAQ();
       initLiveFeed();
     });

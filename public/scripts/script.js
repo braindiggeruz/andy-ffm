@@ -78,25 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
   vids.forEach(function(v){ obs.observe(v); });
 })();
 
-// === CRO: Hide sticky CTA when form is visible ===
-(function() {
-  var stickyBar = document.querySelector('.sticky-cta-bar');
-  if (!stickyBar) return;
-  
-  var forms = document.querySelectorAll('.order_form');
-  var lastForm = forms[forms.length - 1];
-  if (!lastForm) return;
-  
-  var observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting) {
-        stickyBar.style.transform = 'translateY(100%)';
-        stickyBar.style.transition = 'transform 0.3s ease';
-      } else {
-        stickyBar.style.transform = 'translateY(0)';
-      }
-    });
-  }, { threshold: 0.3 });
-  
-  observer.observe(lastForm);
-})();
+// === CRO: sticky bar visibility is handled by cro.js (single source of truth,
+// observes ALL order forms — the old inline-transform logic here conflicted with it) ===
+

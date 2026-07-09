@@ -22,7 +22,7 @@ function jsonResponse(obj, status = 200) {
 }
 
 const EVENT_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const ALLOWED_EVENTS = new Set(["PageView", "ViewContent"]);
+const ALLOWED_EVENTS = new Set(["PageView", "ViewContent", "FormStart"]);
 
 export const onRequestPost = async ({ request, env }) => {
   let payload = {};
