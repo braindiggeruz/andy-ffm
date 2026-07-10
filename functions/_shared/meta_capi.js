@@ -3,7 +3,7 @@
 // Endpoint: POST https://graph.facebook.com/v21.0/{PIXEL_ID}/events
 
 import { capiHashName, capiHashPhone, sha256Hex, uaHash } from "./hash.js";
-import { isValidFbc, isValidFbp } from "./attribution.js";
+import { buildFbcFromFbclid, isValidFbc, isValidFbp } from "./attribution.js";
 
 const GRAPH_API_VERSION = "v21.0";
 
@@ -63,11 +63,11 @@ async function buildUserData(params, env) {
   if (email) userData.em = [await sha256Hex(String(email).toLowerCase().trim())];
   if (isValidFbp(fbp)) userData.fbp = fbp;
   if (isValidFbc(fbc)) userData.fbc = fbc;
-  // If no valid fbc but we have fbclid, try to use it as fallback for matching
-  // (but don't rebuild with new timestamp — use it as-is for matching purposes)
+  // fbc fallback: if the _fbc cookie was blocked but we captured fbclid,
+  // rebuild fbc (fb.1.{ts}.{fbclid}) — Meta accepts it and match quality rises.
   if (!userData.fbc && fbclid) {
-    // Store fbclid for matching, not as fbc (which requires timestamp)
-    // Meta can match on fbclid alone if fbc is missing
+    const rebuilt = buildFbcFromFbclid(String(fbclid).slice(0, 256));
+    if (isValidFbc(rebuilt)) userData.fbc = rebuilt;
   }
 
   const extId = await capiHashExternalId(externalId);

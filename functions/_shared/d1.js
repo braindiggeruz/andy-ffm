@@ -61,4 +61,75 @@ export async function alreadySubmitted(env, submissionId) {
   } catch { return null; }
 }
 
+// --- lead_signals: raw browser identifiers stored at lead time so the BUYO
+// Purchase webhook (which only receives phone/lead_id) can recover fbp/fbc/
+// client_ip/client_ua and send a fully-matched Purchase to Meta CAPI. ---
+
+async function ensureSignalsTable(env) {
+  await env.AUDIT_DB.prepare(`
+    CREATE TABLE IF NOT EXISTS lead_signals (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      buyo_lead_id TEXT,
+      phone_hash TEXT,
+      event_id TEXT,
+      fbp TEXT,
+      fbc TEXT,
+      fbclid TEXT,
+      client_ip TEXT,
+      client_ua TEXT,
+      landing_url TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    )
+  `).run();
+  await env.AUDIT_DB.prepare(
+    "CREATE INDEX IF NOT EXISTS idx_lead_signals_lead ON lead_signals (buyo_lead_id)"
+  ).run();
+  await env.AUDIT_DB.prepare(
+    "CREATE INDEX IF NOT EXISTS idx_lead_signals_phone ON lead_signals (phone_hash)"
+  ).run();
+}
+
+export async function insertLeadSignals(env, row) {
+  if (!env.AUDIT_DB || !env.AUDIT_DB.prepare) return { ok: false, reason: "no_db_binding" };
+  try {
+    await ensureSignalsTable(env);
+    await env.AUDIT_DB.prepare(`
+      INSERT INTO lead_signals (buyo_lead_id, phone_hash, event_id, fbp, fbc, fbclid, client_ip, client_ua, landing_url)
+      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
+    `).bind(
+      row.buyo_lead_id != null ? String(row.buyo_lead_id) : null,
+      row.phone_hash || null,
+      row.event_id || null,
+      row.fbp || null,
+      row.fbc || null,
+      row.fbclid || null,
+      row.client_ip || null,
+      row.client_ua || null,
+      row.landing_url || null,
+    ).run();
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, reason: "d1_error", error: String(e).slice(0, 200) };
+  }
+}
+
+export async function findLeadSignals(env, { leadId, phoneHash }) {
+  if (!env.AUDIT_DB || !env.AUDIT_DB.prepare) return null;
+  try {
+    if (leadId) {
+      const byLead = await env.AUDIT_DB.prepare(
+        "SELECT * FROM lead_signals WHERE buyo_lead_id = ?1 ORDER BY id DESC LIMIT 1"
+      ).bind(String(leadId)).first();
+      if (byLead) return byLead;
+    }
+    if (phoneHash) {
+      const byPhone = await env.AUDIT_DB.prepare(
+        "SELECT * FROM lead_signals WHERE phone_hash = ?1 ORDER BY id DESC LIMIT 1"
+      ).bind(phoneHash).first();
+      if (byPhone) return byPhone;
+    }
+    return null;
+  } catch { return null; }
+}
+
 export { ipPrefix, referrerHost, phoneLast4, uaHash };

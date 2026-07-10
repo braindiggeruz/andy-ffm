@@ -25,6 +25,11 @@ async function logWebhook(env, row) {
   } catch (e) { /* never block the webhook */ }
 }
 
+// Recover browser identifiers captured at lead time (lead_signals table) so the
+// Purchase event carries fbp/fbc/client_ip/client_ua — same person, full match.
+import { findLeadSignals } from "../_shared/d1.js";
+import { buildFbcFromFbclid, isValidFbc, isValidFbp } from "../_shared/attribution.js";
+
 export const onRequestPost = async ({ request, env }) => {
   let rawText = "";
   let payload = {};
@@ -112,9 +117,16 @@ async function sendToMetaCAPI({ lead_id, phone, name, email, order_value, create
     return { ok: false, error: "META_CAPI_ACCESS_TOKEN not configured" };
   }
 
-  // Hash phone and email for Advanced Matching
-  const phoneHash = phone ? await sha256Hex(normalizePhone(phone)) : null;
+  // Hash phone and email for Advanced Matching.
+  // CRITICAL: phone must be hashed in the SAME canonical form as Lead/IC events
+  // (full international digits: 998XXXXXXXXX) or Meta cannot link Purchase to
+  // the same person → match quality collapses.
+  const phoneCanonical = phone ? normalizePhone(phone) : null;
+  const phoneHash = phoneCanonical ? await sha256Hex(phoneCanonical) : null;
   const emailHash = email ? await sha256Hex(String(email).toLowerCase().trim()) : null;
+
+  // Recover browser signals captured at lead time (fbp/fbc/ip/ua/landing_url).
+  const signals = await findLeadSignals(env, { leadId: lead_id, phoneHash });
 
   // Build user_data for Advanced Matching
   const userData = {};
@@ -124,13 +136,24 @@ async function sendToMetaCAPI({ lead_id, phone, name, email, order_value, create
   if (emailHash) userData.em = [emailHash];
   if (name) userData.fn = [await sha256Hex(String(name).toLowerCase().trim().split(/\s+/)[0])];
 
-  // Browser identifiers (NOT hashed)
-  if (attrs._fbp) userData.fbp = attrs._fbp;  // Facebook Pixel ID
-  if (attrs._fbc) userData.fbc = attrs._fbc;  // Facebook Click ID
+  // Browser identifiers (NOT hashed): webhook attrs first, then D1 signals.
+  const fbp = (attrs && attrs._fbp) || (signals && signals.fbp) || null;
+  const fbc = (attrs && attrs._fbc) || (signals && signals.fbc) || null;
+  if (isValidFbp(fbp)) userData.fbp = fbp;
+  if (isValidFbc(fbc)) userData.fbc = fbc;
+  if (!userData.fbc && signals && signals.fbclid) {
+    const rebuilt = buildFbcFromFbclid(String(signals.fbclid).slice(0, 256));
+    if (isValidFbc(rebuilt)) userData.fbc = rebuilt;
+  }
 
   // Client info (raw, NOT hashed)
-  if (attrs.client_ip) userData.client_ip_address = attrs.client_ip;
-  if (attrs.client_ua) userData.client_user_agent = attrs.client_ua;  // Raw User-Agent
+  const clientIp = (attrs && attrs.client_ip) || (signals && signals.client_ip) || null;
+  const clientUa = (attrs && attrs.client_ua) || (signals && signals.client_ua) || null;
+  if (clientIp) userData.client_ip_address = clientIp;
+  if (clientUa) userData.client_user_agent = clientUa;
+
+  // country (hashed) — all traffic is Uzbekistan.
+  userData.country = [await sha256Hex("uz")];
 
   // Optional: additional hashed PII for better matching
   if (attrs.ln) userData.ln = [await sha256Hex(String(attrs.ln).toLowerCase().trim())];  // Last name
@@ -141,14 +164,20 @@ async function sendToMetaCAPI({ lead_id, phone, name, email, order_value, create
   if (attrs.dob) userData.db = [await sha256Hex(String(attrs.dob).replace(/\D/g, ''))];  // DOB YYYYMMDD
   if (attrs.gender) userData.ge = [await sha256Hex(String(attrs.gender).toLowerCase().charAt(0))];
 
-  // Build custom_data
+  // Build custom_data (order_value from BUYO may be a string / in different
+  // units — parse defensively, fall back to the confirmed SKU price).
   const contentId = env.PRODUCT_CONTENT_ID || "socks-with-toes-v1";
+  const defaultValue = Number.parseInt(env.PRODUCT_VALUE_UZS || "135000", 10) || 135000;
+  const parsedValue = Number.parseFloat(String(order_value || "").replace(/[^\d.]/g, ""));
+  const value = Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : defaultValue;
   const customData = {
-    value: order_value || Number.parseInt(env.PRODUCT_VALUE_UZS || "135000", 10) || 135000,
+    value: value,
     currency: env.PRODUCT_CURRENCY || "UZS",
     content_name: env.PRODUCT_CONTENT_NAME || "Barmoqli paypoqlar (3 juft)",
     content_ids: [contentId],
     content_type: "product",
+    num_items: 1,
+    contents: [{ id: contentId, quantity: 1 }],
   };
 
   // Stable dedup key per lead: lead_id if present, else the phone hash.
@@ -169,7 +198,7 @@ async function sendToMetaCAPI({ lead_id, phone, name, email, order_value, create
         event_time: eventTime,
         event_id: eventId,
         action_source: "website",
-        event_source_url: attrs.landing_url || "https://socks.savdomix.uz",
+        event_source_url: (attrs && attrs.landing_url) || (signals && signals.landing_url) || "https://socks.savdomix.uz",
         user_data: userData,
         custom_data: customData,
       },
@@ -202,14 +231,17 @@ async function sendToMetaCAPI({ lead_id, phone, name, email, order_value, create
 }
 
 /**
- * Normalize phone to 9 digits (Uzbekistan format)
+ * Normalize phone to canonical international digits (998XXXXXXXXX) —
+ * MUST match _shared/phone.js normalizePhone so ph hashes are identical
+ * across Lead / InitiateCheckout / Purchase events.
  */
 function normalizePhone(phone) {
   let d = String(phone || "").replace(/\D+/g, "");
   if (d.startsWith("00998")) d = d.slice(2);
   if (d.length === 10 && d.startsWith("8")) d = d.slice(1);
   if (d.startsWith("998")) d = d.slice(3);
-  return d.slice(0, 9);
+  d = d.slice(0, 9);
+  return d.length === 9 ? "998" + d : null;
 }
 
 /**

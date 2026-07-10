@@ -18,7 +18,7 @@ import { sha256Hex, uaHash } from "../_shared/hash.js";
 import { ipPrefix, referrerHost } from "../_shared/attribution.js";
 import { submitBuyo } from "../_shared/buyo.js";
 import { sendCapiLead } from "../_shared/meta_capi.js";
-import { alreadySubmitted, insertAuditRow } from "../_shared/d1.js";
+import { alreadySubmitted, insertAuditRow, insertLeadSignals } from "../_shared/d1.js";
 
 function jsonResponse(obj, status = 200) {
   return new Response(JSON.stringify(obj), {
@@ -154,6 +154,19 @@ export const onRequestPost = async ({ request, env }) => {
 
   // 6) Meta CAPI (only on REAL accepted leads; never on mock or rejected)
   if (buyoResult.accepted && buyoResult.mode === "real") {
+    // Persist raw browser identifiers so the BUYO Purchase webhook can rebuild
+    // full Advanced Matching (fbp/fbc/ip/ua) for the Purchase event later.
+    await insertLeadSignals(env, {
+      buyo_lead_id: buyoResult.leadId,
+      phone_hash: phHash,
+      event_id: eventId,
+      fbp: typeof attrs._fbp === "string" ? attrs._fbp.slice(0, 128) : null,
+      fbc: typeof attrs._fbc === "string" ? attrs._fbc.slice(0, 512) : null,
+      fbclid: sanitizeUtm(attrs.fbclid, 256),
+      client_ip: ip || null,
+      client_ua: (ua || "").slice(0, 512) || null,
+      landing_url: sanitizeUrl(attrs.landing_url),
+    });
     const capi = await sendCapiLead({
       eventId,
       eventSourceUrl: sanitizeUrl(attrs.landing_url) || "",

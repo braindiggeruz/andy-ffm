@@ -55,8 +55,8 @@ export const onRequestPost = async ({ request, env }) => {
     fbclid: typeof attrs.fbclid === "string" ? attrs.fbclid : null,
     externalId: (payload.external_id || "").toString() || null,
     country: "uz",
-    // No phone/name available at PageView/ViewContent — value still forced server-side.
-    orderValue: 125000,
+    // No phone/name available at PageView/ViewContent — value forced server-side
+    // to the confirmed SKU by resolveOrderValue.
     quantity: 1,
   }, env);
 
